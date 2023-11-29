@@ -11,6 +11,12 @@
             "deviceId": "00008110-0004156C2E61801E"
         },
         {
+            "name": "windows",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "windows"
+        },
+        {
             "name": "FlutterFlameGames",
             "request": "launch",
             "type": "dart"
