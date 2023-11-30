@@ -12,7 +12,22 @@ class _FlappyBirdGameState extends State<FlappyBirdPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: null,
-      body: const GameWidget.controlled(gameFactory: FlappyBirdGame.new),
+      body: Stack(
+        children: [
+          const GameWidget.controlled(gameFactory: FlappyBirdGame.new),
+          Positioned(
+              left: 16,
+              top: 60,
+              child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  )))
+        ],
+      ),
     );
   }
 }
