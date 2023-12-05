@@ -69,7 +69,7 @@ class PipeComponent extends PositionComponent with CollisionCallbacks {
   FutureOr<void> onLoad() async {
     final nineBox = NineTileBox(
         await Sprite.load("pipe-green.png", images: images))
-      ..setGrid(leftWidth: 0, rightWidth: 0, topHeight: 50, bottomHeight: 10);
+      ..setGrid(leftWidth: 10, rightWidth: 10, topHeight: 60, bottomHeight: 60);
     final spriteCom = NineTileBoxComponent(nineTileBox: nineBox, size: size);
     if (isUpsideDown) {
       spriteCom.flipVerticallyAroundCenter();
@@ -86,13 +86,13 @@ class PipeComponent extends PositionComponent with CollisionCallbacks {
 class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   final images = Images(prefix: "assets/flappybird/sprites/");
   var gameSpeed = 90.0;
-  final pipeFullSize = Vector2(52.0, 620.0);
+  final pipeFullSize = Vector2(52.0, 520.0);
   late PositionComponent _pipeLayer;
 
   @override
   FutureOr<void> onLoad() async {
     FlameAudio.updatePrefix("assets/flappybird/audios/");
-    FlameAudio.bgm.play("wing.wav");
+    // FlameAudio.bgm.play("wing.wav");
 
     await setupBg();
     await setupBird();
@@ -100,6 +100,26 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
 
     resetGame();
     return super.onLoad();
+  }
+
+  
+  @override
+  void update(double dt) {
+    super.update(dt);
+    updateBird(dt);
+    updatePipes(dt);
+    updateScoreLabel();
+    if (_birdComponent.isDead) {
+      FlameAudio.play("die.wav");
+      gameOver();
+    }
+  }
+
+  @override
+  void onTap() {
+    super.onTap();
+    FlameAudio.play("swoosh.wav");
+    _birdYVelocity = -120;
   }
 
   @override
@@ -191,11 +211,11 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   final _pipes = [];
   final _bonusZones = [];
   createPipe() {
-    const pipeSpace = 220.0;
-    const minPipeHeight = 120.0;
-    const gapHeight = 90.0;
-    const baseHeight = 112.0;
-    const gapMaxRandomRange = 300;
+    const pipeSpace = 220.0; // the space of two pipe group
+    const minPipeHeight = 120.0; // pipe min height
+    const gapHeight = 90.0; // the gap length of two pipe 
+    const baseHeight = 112.0; // the bottom platform height
+    const gapMaxRandomRange = 300; // gap position max random range
     var lastPipePos = _pipes.lastOrNull?.position.x ?? size.x - pipeSpace;
     lastPipePos += pipeSpace;
 
@@ -275,22 +295,4 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     _bonusZones.clear();
   }
 
-  @override
-  void update(double dt) {
-    super.update(dt);
-    updateBird(dt);
-    updatePipes(dt);
-    updateScoreLabel();
-    if (_birdComponent.isDead) {
-      FlameAudio.play("die.wav");
-      gameOver();
-    }
-  }
-
-  @override
-  void onTap() {
-    super.onTap();
-    FlameAudio.play("swoosh.wav");
-    _birdYVelocity = -120;
-  }
 }
