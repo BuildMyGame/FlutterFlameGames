@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_flame_games/games/cuttherope/cut_the_rope_page.dart';
 import 'package:flutter_flame_games/games/flappybird/flappybird_page.dart';
 
 class GameItem {
@@ -20,6 +21,13 @@ class _HomePageState extends State<HomePage> {
       title: "Flappy Bird",
       pageBuilder: (context, animation, secondaryAnimation) {
         return FlappyBirdPage();
+      },
+    ),
+    GameItem(
+      icon: "assets/cuttherope/sprites/icon.png",
+      title: "Cut the Rope",
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return CutTheRopePage();
       },
     )
   ];
