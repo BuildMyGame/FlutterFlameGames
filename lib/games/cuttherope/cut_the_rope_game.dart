@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
@@ -16,7 +17,7 @@ class CutTheRopeGame extends Forge2DGame with TapCallbacks {
   late CTRPlayer _player;
   @override
   FutureOr<void> onLoad() async {
-    world.gravity = Vector2(0, 98);
+    world.gravity = Vector2(0, 100);
     // final bgSprite = await Sprite.load("bgr_01_hd.jpeg",
     //     images: images,
     //     srcSize: Vector2(770, 1036),
@@ -46,7 +47,7 @@ class CutTheRopeGame extends Forge2DGame with TapCallbacks {
     //   ..position = Vector2(size.x * 0.5, 200);
     // add(star);
 
-    final rope = CTRRope(startPosition: Vector2(100, 100));
+    final rope = CTRRope(startPosition: Offset(100, 100), endPosition: Offset(200, 200), length: 200);
     add(rope);
     return super.onLoad();
   }
@@ -54,6 +55,6 @@ class CutTheRopeGame extends Forge2DGame with TapCallbacks {
   @override
   void onTapDown(TapDownEvent event) {
     super.onTapDown(event);
-    _player.eat();
+    // _player.eat();
   }
 }
