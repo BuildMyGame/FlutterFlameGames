@@ -3,15 +3,17 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/cache.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/image_composition.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flame_games/games/cuttherope/ctr_candy.dart';
 
 enum CTRPlayerAnimState { reset, idle1, idle2, eat }
 
-class CTRPlayer extends PositionComponent {
+class CTRPlayer extends PositionComponent with CollisionCallbacks {
   final Images? images;
   late List<Sprite> _sprites;
   late SpriteAnimationGroupComponent _animationComponent;
@@ -25,6 +27,7 @@ class CTRPlayer extends PositionComponent {
     final charSize = Vector2(92, 92);
 
     size = Vector2(110, 110);
+    add(RectangleHitbox(size: size));
 
     // supports
     final supportSprite = await Sprite.load("char_supports.png",
@@ -87,6 +90,16 @@ class CTRPlayer extends PositionComponent {
   eat() {
     _animationComponent.animationTickers?[CTRPlayerAnimState.eat]?.reset();
     _animationComponent.current = CTRPlayerAnimState.eat;
+  }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+    if (other is CTRCandyCollisionComponent) {
+      other.candy?.target?.beEaten();
+      eat();
+    }
   }
 
   @override

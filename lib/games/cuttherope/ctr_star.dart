@@ -10,6 +10,7 @@
 import 'dart:async';
 
 import 'package:flame/cache.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/image_composition.dart';
@@ -27,6 +28,10 @@ class CTRStar extends PositionComponent {
   @override
   FutureOr<void> onLoad() async {
     size = Vector2(221, 221);
+
+    add(CircleHitbox(radius: 10)
+      ..anchor = Anchor.center
+      ..position = size * 0.5);
 
     final idleSprites = await _idleSprites();
     final disappearSprites = await _disappearSprites();
