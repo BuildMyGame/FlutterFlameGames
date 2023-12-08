@@ -14,13 +14,7 @@ class CTRCandyCollisionComponent extends PositionComponent
     with CollisionCallbacks {
   final WeakReference<CTRCandy>? candy;
   CTRCandyCollisionComponent({this.candy});
-
-  @override
-  void onRemove() {
-    super.onRemove();
-    print("remove CTRCandyCollisionComponent");
-  }
-
+  
   @override
   FutureOr<void> onLoad() {
     size = Vector2(40, 40);
@@ -41,7 +35,7 @@ class CTRCandyCollisionComponent extends PositionComponent
   }
 }
 
-class CTRCandy extends BodyComponent with CollisionCallbacks {
+class CTRCandy extends BodyComponent {
   final Images? images;
   final Offset pos;
 

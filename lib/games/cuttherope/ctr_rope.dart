@@ -67,7 +67,7 @@ class CTRRope<T extends Forge2DGame> extends PositionComponent
 
   @override
   FutureOr<void> onLoad() async {
-    Offset endPosition = startPosition + Offset(0, length);
+    Offset endPosition = startPosition + Offset(length, 0);
     if (attachComponent != null) {
       await Future.wait([attachComponent!.loaded]);
       endPosition = Offset(

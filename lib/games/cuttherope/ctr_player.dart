@@ -112,7 +112,6 @@ class CTRPlayer extends PositionComponent with CollisionCallbacks {
       _lastIdleAnimElapsedTime = 0;
       final states = [CTRPlayerAnimState.idle1, CTRPlayerAnimState.idle2];
       final state = states[Random().nextInt(states.length)];
-      print("state: $state");
       _animationComponent.current = state;
     }
   }
