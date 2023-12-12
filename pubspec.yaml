@@ -69,6 +69,7 @@ flutter:
     - assets/flappybird/audios/
     - assets/flappybird/sprites/
     - assets/cuttherope/sprites/
+    - assets/fallblocks/sprites/
     
     
 
