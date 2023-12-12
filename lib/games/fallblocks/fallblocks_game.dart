@@ -8,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flame/geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flame_games/games/fallblocks/fb_block.dart';
+import 'package:flutter_flame_games/games/fallblocks/fb_break_effect.dart';
 
 class FallBlocksGame extends FlameGame
     with HasCollisionDetection, TapCallbacks {
@@ -25,16 +26,15 @@ class FallBlocksGame extends FlameGame
       ..setColor(Colors.blueGrey);
     add(bgComponent);
 
-
     final gamePanelSize = Vector2(
         unitSize.width * mapSize.width, unitSize.height * mapSize.height);
-    final gamePanelClipComponent = ClipComponent.rectangle(position: size * 0.5, size: gamePanelSize)
-    ..anchor = Anchor.center;
+    final gamePanelClipComponent =
+        ClipComponent.rectangle(position: size * 0.5, size: gamePanelSize)
+          ..anchor = Anchor.center;
     add(gamePanelClipComponent);
-    _gamePanelComponent =
-        RectangleComponent(size: gamePanelSize)
-          ..setColor(Colors.blue);
-         
+    _gamePanelComponent = RectangleComponent(size: gamePanelSize)
+      ..setColor(Colors.blue);
+
     gamePanelClipComponent.add(_gamePanelComponent);
 
     gameBottomLineOrigin = Vector2(0, gamePanelSize.y - unitSize.height);
@@ -49,7 +49,7 @@ class FallBlocksGame extends FlameGame
     newLine();
     await Future.delayed(const Duration(milliseconds: 300));
     await checkFall();
-    while(await checkLine()) {
+    while (await checkLine()) {
       await Future.delayed(const Duration(milliseconds: 100));
       await checkFall();
     }
@@ -60,7 +60,7 @@ class FallBlocksGame extends FlameGame
 
   checkFall() async {
     // make all blocks fall
-    while(true) {
+    while (true) {
       bool hasAnyFallBlock = false;
       for (final block in _blocks) {
         hasAnyFallBlock |= block.fallToBlock();
@@ -89,7 +89,8 @@ class FallBlocksGame extends FlameGame
     }
     bool anyRemove = false;
     for (final key in blockStats.keys) {
-      if (blockWidthStats[key]! > (_gamePanelComponent.width - unitSize.width * 0.5)) {
+      if (blockWidthStats[key]! >
+          (_gamePanelComponent.width - unitSize.width * 0.5)) {
         _blocks.removeWhere((element) {
           bool needRemove = blockStats[key]?.contains(element) ?? false;
           if (needRemove) {
@@ -97,6 +98,10 @@ class FallBlocksGame extends FlameGame
           }
           return needRemove;
         });
+        final effectPos = Vector2(_gamePanelComponent.l, (key + 1) * unitSize.height);
+        add(FBBreakEffect(
+            position: effectPos,
+            size: Vector2(_gamePanelComponent.width, unitSize.height)));
         anyRemove = true;
       }
     }
@@ -133,14 +138,10 @@ class FallBlocksGame extends FlameGame
         final block = FBBlock(
             unitSize: unitSize,
             unitCount: unitCount,
-            xLimit: Offset(
-                0,
-                    _gamePanelComponent.size.x),
-                    yLimit: Offset(
-                0,
-                    _gamePanelComponent.size.y))
-          ..position =
-              Vector2(lineOrigin.x + pos * unitSize.width, lineOrigin.y + unitSize.height);
+            xLimit: Offset(0, _gamePanelComponent.size.x),
+            yLimit: Offset(0, _gamePanelComponent.size.y))
+          ..position = Vector2(lineOrigin.x + pos * unitSize.width,
+              lineOrigin.y + unitSize.height);
         _gamePanelComponent.add(block);
         block.liftOneUnit();
         _blocks.add(block);
