@@ -16,16 +16,15 @@ import 'package:flutter_flame_games/games/fallblocks/fb_break_effect.dart';
 class FallBlocksGame extends FlameGame
     with HasCollisionDetection, TapCallbacks {
   final images = Images(prefix: "assets/fallblocks/sprites/");
-  final mapSize = const Size(7, 12);
+  final mapSize = const Size(6, 12);
   final unitSize = const Size(40, 40);
   var gameBottomLineOrigin = Vector2(0, 0);
 
-
   late PositionComponent _gamePanelComponent;
-  List<FBBlock> _blocks = [];
-  var _score = 0;
+  final List<FBBlock> _blocks = [];
+  var score = 0;
   var _lastCheckLineDelta = 0.0;
-  var _checkLineCount = 0;
+  var _shouldCheckLine = false;
 
   @override
   FutureOr<void> onLoad() async {
@@ -60,22 +59,26 @@ class FallBlocksGame extends FlameGame
     updateScoreLabel();
 
     _lastCheckLineDelta += dt;
-    if (_lastCheckLineDelta > 0.5 && _checkLineCount > 0) {
+    if (_lastCheckLineDelta > 0.2 && _shouldCheckLine) {
       _lastCheckLineDelta = 0;
       bool isAllGrounded = true;
       for (final block in _blocks) {
         isAllGrounded &= block.isGrounded();
       }
       if (isAllGrounded) {
-        _checkLineCount--;
         bool res = checkLine();
         if (res) {
-          _checkLineCount = 1;
+          _shouldCheckLine = true;
           for (final block in _blocks.reversed) {
             block.markNeedFall();
           }
+          if (_blocks.isEmpty) {
+            newLine();
+          }
+        } else {
+          _shouldCheckLine = false;
+          checkFail();
         }
-        print("check line: $res - $_checkLineCount");
       }
     }
   }
@@ -84,26 +87,16 @@ class FallBlocksGame extends FlameGame
     newLine();
     await Future.delayed(const Duration(milliseconds: 100));
     for (final block in _blocks.reversed) {
-      // await Future.delayed(const Duration(milliseconds: 50));
       block.markNeedFall();
     }
-    _checkLineCount = 1;
-    print("Next turn: $_checkLineCount");
-
-    // while (await checkLine()) {
-    //   await Future.delayed(const Duration(milliseconds: 100));
-    //   await checkFall();
-    // }
-    // if (_blocks.length < 3) {
-    //   newLine();
-    // }
+    _shouldCheckLine = true;
   }
 
   bool checkLine() {
     Map<int, List<FBBlock>> blockStats = {};
     Map<int, double> blockWidthStats = {};
     for (final block in _blocks) {
-      int row = (block.position.y - unitSize.height * 0.5) ~/ unitSize.height;
+      int row = (block.position.y) ~/ unitSize.height;
       if (!blockStats.containsKey(row)) {
         blockStats[row] = [];
         blockWidthStats[row] = 0;
@@ -122,11 +115,12 @@ class FallBlocksGame extends FlameGame
           }
           return needRemove;
         });
-        final effectPos = Vector2(_gamePanelComponent.absolutePosition.x, _gamePanelComponent.absolutePosition.y + (key + 1) * unitSize.height);
+        final effectPos = Vector2(_gamePanelComponent.absolutePosition.x,
+            _gamePanelComponent.absolutePosition.y + key * unitSize.height);
         add(FBBreakEffect(
             position: effectPos,
             size: Vector2(_gamePanelComponent.width, unitSize.height)));
-        _score++;
+        score++;
         anyRemove = true;
       }
     }
@@ -140,7 +134,7 @@ class FallBlocksGame extends FlameGame
     }
 
     // create new line
-    final unitCountOptions = [1, 2, 3];
+    final unitCountOptions = [1, 2, 3, 3, 3];
     List<int> blocksUnitCount = [];
     var leftUnitCount = mapSize.width.toInt();
     while (true) {
@@ -175,24 +169,44 @@ class FallBlocksGame extends FlameGame
     }
   }
 
+  void checkFail() {
+    for (final block in _blocks) {
+      int row = (block.position.y - unitSize.height * 0.5) ~/ unitSize.height;
+      if (row < 0) {
+        overlays.add("failed");
+        return;
+      }
+    }
+  }
+
+  void reset() {
+    for (final block in _blocks) {
+      block.removeFromParent();
+    }
+    _blocks.clear();
+    score = 0;
+    updateScoreLabel();
+    nextTurn();
+  }
+
   // scoreLabel
   List<ui.Image> _numSprites = [];
-  late SpriteComponent _scoreComponent;
+  late SpriteComponent scoreComponent;
   setupScoreLabel() async {
     for (int i = 0; i < 10; ++i) {
       final imgName = "$i.png";
       _numSprites.add(await images.load(imgName));
     }
 
-    _scoreComponent = SpriteComponent()
+    scoreComponent = SpriteComponent()
       ..position = Vector2(size.x * 0.5, 100)
       ..sprite = Sprite(_numSprites[0]);
-    _scoreComponent.anchor = Anchor.center;
-    add(_scoreComponent);
+    scoreComponent.anchor = Anchor.center;
+    add(scoreComponent);
   }
 
   updateScoreLabel() async {
-    final scoreStr = _score.toString();
+    final scoreStr = score.toString();
     final numCount = scoreStr.length;
     double offset = 0;
     final imgComposition = ImageComposition();
@@ -203,6 +217,6 @@ class FallBlocksGame extends FlameGame
       offset += _numSprites[num].size.x;
     }
     final img = await imgComposition.compose();
-    _scoreComponent.sprite = Sprite(img);
+    scoreComponent.sprite = Sprite(img);
   }
 }
