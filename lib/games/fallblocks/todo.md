@@ -19,6 +19,6 @@
 * 游戏结束判断 ok
     * 行误判的问题 ok
     * 恢复随机代码 ok
-* block unit尺寸按照屏幕适配
-* AI生成寻找block和背景素材
-* 吸附hint UI
+* block unit尺寸按照屏幕适配 ok
+* AI生成寻找block和背景素材 ok
+* 吸附hint UI ok

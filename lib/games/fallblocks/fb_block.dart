@@ -1,19 +1,19 @@
-import 'dart:ui';
+import 'dart:async';
+import 'dart:ui' as ui;
 
+import 'package:flame/cache.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/geometry.dart';
 import 'package:flame/image_composition.dart';
-import 'package:flame/input.dart';
-import 'package:flame/src/gestures/events.dart';
-import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flame_games/games/fallblocks/fallblocks_game.dart';
 
 class FBBlock extends PositionComponent
     with DragCallbacks, HasGameReference<FallBlocksGame>, CollisionCallbacks {
+  final Images? images;
   final Size unitSize;
   final int unitCount;
   final Offset xLimit;
@@ -23,9 +23,11 @@ class FBBlock extends PositionComponent
   var _showHint = false;
   var _isGrounded = false;
   final _fallSpeed = const Offset(0, 200);
+  ui.Image? _spriteImage;
 
   FBBlock(
-      {this.unitSize = const Size(40, 40),
+      {this.images,
+      this.unitSize = const Size(40, 40),
       this.unitCount = 1,
       this.xLimit = const Offset(0, 0),
       this.yLimit = const Offset(0, 0)}) {
@@ -54,6 +56,12 @@ class FBBlock extends PositionComponent
   }
 
   @override
+  FutureOr<void> onLoad() async {
+    super.onLoad();
+    _spriteImage = await images?.load("block_dirt.webp");
+  }
+
+  @override
   void update(double dt) {
     if (!_isGrounded) {
       var newPosition = position + (_fallSpeed * dt).toVector2();
@@ -71,12 +79,18 @@ class FBBlock extends PositionComponent
     final width = unitSize.width * unitCount;
     final height = unitSize.height;
     const margin = 1.0;
-    canvas.drawRRect(
-        RRect.fromLTRBR(margin, margin, width - margin * 2.0,
-            height - margin * 2.0, const Radius.circular(4.0)),
-        Paint()
-          ..color = Colors.amber
-          ..style = PaintingStyle.fill);
+    canvas.clipRRect(RRect.fromLTRBR(margin, margin, width - margin * 2.0, height - margin * 2.0, const Radius.circular(5)));
+    double currentX = 0.0;
+    double imgNewWidth = height / _spriteImage!.height * _spriteImage!.width;
+    canvas.drawRect(Rect.fromLTRB(margin, margin, width - margin * 2.0, height - margin * 2.0), Paint()..style=PaintingStyle.fill..color=Colors.red);
+    while (currentX < width) 
+    {
+      if (_spriteImage != null) {
+        canvas.drawImageRect(_spriteImage!, Rect.fromLTRB(0, 0, _spriteImage!.width.toDouble(), _spriteImage!.height.toDouble()), Rect.fromLTRB(currentX, 0, imgNewWidth + currentX, height), Paint());
+        // canvas.drawImage(_spriteImage!, Offset(currentX, currentY), Paint());
+        currentX += imgNewWidth;
+      }
+    }
   }
 
   @override
@@ -102,7 +116,7 @@ class FBBlock extends PositionComponent
     }
     _snapHitComponent =
         RectangleComponent.fromRect(Rect.fromLTRB(0, 0, size.x, size.y))
-          ..setColor(Colors.red.withAlpha(100));
+          ..setColor(Colors.white.withAlpha(120));
     parent?.add(_snapHitComponent!);
 
     _dragBeginPosition = position;
@@ -132,7 +146,7 @@ class FBBlock extends PositionComponent
       return;
     }
     var newPos = _dragBeginPosition + Vector2(event.delta.x, 0);
-    var newPosX = clampDouble(newPos.x, _dragLimitLeft, _dragLimitRight);
+    var newPosX = ui.clampDouble(newPos.x, _dragLimitLeft, _dragLimitRight);
     position = Vector2(newPosX, position.y);
 
     final snapPos = _snapPosition();

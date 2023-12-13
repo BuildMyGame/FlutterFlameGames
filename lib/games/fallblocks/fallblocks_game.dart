@@ -10,14 +10,15 @@ import 'package:flame/game.dart';
 import 'package:flame/geometry.dart';
 import 'package:flame/image_composition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flame_games/games/fallblocks/fb_background_component.dart';
 import 'package:flutter_flame_games/games/fallblocks/fb_block.dart';
 import 'package:flutter_flame_games/games/fallblocks/fb_break_effect.dart';
 
 class FallBlocksGame extends FlameGame
     with HasCollisionDetection, TapCallbacks {
   final images = Images(prefix: "assets/fallblocks/sprites/");
-  final mapSize = const Size(6, 12);
-  final unitSize = const Size(40, 40);
+  final mapSize = const Size(8, 15);
+  var unitSize = const Size(40, 40);
   var gameBottomLineOrigin = Vector2(0, 0);
 
   late PositionComponent _gamePanelComponent;
@@ -29,9 +30,18 @@ class FallBlocksGame extends FlameGame
   @override
   FutureOr<void> onLoad() async {
     // bg & panel
-    final bgComponent = RectangleComponent(position: Vector2(0, 0), size: size)
-      ..setColor(Colors.blueGrey);
+    final bgImage = await images.load("background.png");
+    final bgComponent = FBBackgroundComponnet(
+        size: size,
+        image: bgImage);
     add(bgComponent);
+
+    // caculate the fit unit size
+    const gameAreaPadding = 40.0;
+    final maxUnitSizeW = (size.x - gameAreaPadding * 2.0) / mapSize.width;
+    final maxUnitSizeH = (size.y - gameAreaPadding * 2.0) / mapSize.height;
+    final finalUnitSize = min(maxUnitSizeW, maxUnitSizeH);
+    unitSize = Size(finalUnitSize, finalUnitSize);
 
     final gamePanelSize = Vector2(
         unitSize.width * mapSize.width, unitSize.height * mapSize.height);
@@ -40,7 +50,7 @@ class FallBlocksGame extends FlameGame
           ..anchor = Anchor.center;
     add(gamePanelClipComponent);
     _gamePanelComponent = RectangleComponent(size: gamePanelSize)
-      ..setColor(Colors.blue);
+      ..setColor(Colors.black.withAlpha(220));
 
     gamePanelClipComponent.add(_gamePanelComponent);
 
@@ -96,7 +106,11 @@ class FallBlocksGame extends FlameGame
     Map<int, List<FBBlock>> blockStats = {};
     Map<int, double> blockWidthStats = {};
     for (final block in _blocks) {
-      int row = (block.position.y) ~/ unitSize.height;
+      if (block.position.y < 0) {
+        continue;
+      }
+      int row = (block.position.y + unitSize.height * 0.5) ~/ unitSize.height;
+      
       if (!blockStats.containsKey(row)) {
         blockStats[row] = [];
         blockWidthStats[row] = 0;
@@ -118,6 +132,7 @@ class FallBlocksGame extends FlameGame
         final effectPos = Vector2(_gamePanelComponent.absolutePosition.x,
             _gamePanelComponent.absolutePosition.y + key * unitSize.height);
         add(FBBreakEffect(
+            images: images,
             position: effectPos,
             size: Vector2(_gamePanelComponent.width, unitSize.height)));
         score++;
@@ -134,7 +149,7 @@ class FallBlocksGame extends FlameGame
     }
 
     // create new line
-    final unitCountOptions = [1, 2, 3, 3, 3];
+    final unitCountOptions = [1, 2, 3, 4];
     List<int> blocksUnitCount = [];
     var leftUnitCount = mapSize.width.toInt();
     while (true) {
@@ -155,6 +170,7 @@ class FallBlocksGame extends FlameGame
       final unitCount = blocksUnitCount[i];
       if (i != gapIndex) {
         final block = FBBlock(
+            images: images,
             unitSize: unitSize,
             unitCount: unitCount,
             xLimit: Offset(0, _gamePanelComponent.size.x),

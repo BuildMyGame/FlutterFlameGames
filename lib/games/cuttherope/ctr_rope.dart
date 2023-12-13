@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/collisions.dart';
