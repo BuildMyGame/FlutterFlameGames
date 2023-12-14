@@ -32,8 +32,8 @@ class _HomePageState extends State<HomePage> {
       },
     ),
     GameItem(
-      icon: "assets/cuttherope/sprites/icon.png",
-      title: "Cut the Rope",
+      icon: "assets/fallblocks/sprites/icon.jpg",
+      title: "Fall Blocks",
       pageBuilder: (context, animation, secondaryAnimation) {
         return FallBlocksPage();
       },

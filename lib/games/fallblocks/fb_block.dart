@@ -31,7 +31,7 @@ class FBBlock extends PositionComponent
       this.unitCount = 1,
       this.xLimit = const Offset(0, 0),
       this.yLimit = const Offset(0, 0)}) {
-    const hitBoxPadding = 1.0;
+    const hitBoxPadding = 0.5;
     size = Vector2(unitSize.width * unitCount, unitSize.height);
     _hitBox = RectangleHitbox(
         position: Vector2(hitBoxPadding, hitBoxPadding),
@@ -64,11 +64,35 @@ class FBBlock extends PositionComponent
   @override
   void update(double dt) {
     if (!_isGrounded) {
+      final moveOffset = (_fallSpeed * dt).toVector2();
       var newPosition = position + (_fallSpeed * dt).toVector2();
-      if (newPosition.y > (yLimit.dy - unitSize.height)) {
-        _isGrounded = true;
-        newPosition = Vector2(position.x, yLimit.dy - unitSize.height);
+      for (int i = 0; i < unitCount; ++i) {
+        final ray = Ray2(
+            origin: absolutePosition +
+                Vector2((i + 0.5) * unitSize.width, unitSize.height * 0.5),
+            direction: Vector2(0, 1));
+        final raycastResult =
+            game.collisionDetection.raycast(ray, ignoreHitboxes: [_hitBox]);
+        if (raycastResult != null) {
+          if ((raycastResult.distance ?? 0) <= (4 + unitSize.height * 0.5)) {
+            newPosition = position +
+                Vector2(
+                    0, (raycastResult.distance ?? 0) - unitSize.height * 0.5);
+            _isGrounded = true;
+            // print(
+            // "raycastResult.distance: ${raycastResult.distance}  position: $position newPosition: $newPosition");
+          }
+          break;
+        }
       }
+
+      if (!_isGrounded) {
+        if (newPosition.y > (yLimit.dy - unitSize.height)) {
+          _isGrounded = true;
+          newPosition = Vector2(position.x, yLimit.dy - unitSize.height);
+        }
+      }
+
       position = newPosition;
     }
   }
@@ -79,14 +103,24 @@ class FBBlock extends PositionComponent
     final width = unitSize.width * unitCount;
     final height = unitSize.height;
     const margin = 1.0;
-    canvas.clipRRect(RRect.fromLTRBR(margin, margin, width - margin * 2.0, height - margin * 2.0, const Radius.circular(5)));
+    canvas.clipRRect(RRect.fromLTRBR(margin, margin, width - margin * 2.0,
+        height - margin * 2.0, const Radius.circular(5)));
     double currentX = 0.0;
     double imgNewWidth = height / _spriteImage!.height * _spriteImage!.width;
-    canvas.drawRect(Rect.fromLTRB(margin, margin, width - margin * 2.0, height - margin * 2.0), Paint()..style=PaintingStyle.fill..color=Colors.red);
-    while (currentX < width) 
-    {
+    canvas.drawRect(
+        Rect.fromLTRB(
+            margin, margin, width - margin * 2.0, height - margin * 2.0),
+        Paint()
+          ..style = PaintingStyle.fill
+          ..color = Colors.red);
+    while (currentX < width) {
       if (_spriteImage != null) {
-        canvas.drawImageRect(_spriteImage!, Rect.fromLTRB(0, 0, _spriteImage!.width.toDouble(), _spriteImage!.height.toDouble()), Rect.fromLTRB(currentX, 0, imgNewWidth + currentX, height), Paint());
+        canvas.drawImageRect(
+            _spriteImage!,
+            Rect.fromLTRB(0, 0, _spriteImage!.width.toDouble(),
+                _spriteImage!.height.toDouble()),
+            Rect.fromLTRB(currentX, 0, imgNewWidth + currentX, height),
+            Paint());
         // canvas.drawImage(_spriteImage!, Offset(currentX, currentY), Paint());
         currentX += imgNewWidth;
       }
@@ -97,10 +131,10 @@ class FBBlock extends PositionComponent
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
-    if (!_isGrounded && other is FBBlock) {
-      _isGrounded = true;
-      position = Vector2(position.x, other.position.y - other.size.y);
-    }
+    // if (!_isGrounded && other is FBBlock) {
+    //   _isGrounded = true;
+    //   position = Vector2(position.x, other.position.y - other.size.y);
+    // }
   }
 
   // Drag Gesture

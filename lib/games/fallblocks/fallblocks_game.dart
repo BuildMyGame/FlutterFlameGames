@@ -31,9 +31,7 @@ class FallBlocksGame extends FlameGame
   FutureOr<void> onLoad() async {
     // bg & panel
     final bgImage = await images.load("background.png");
-    final bgComponent = FBBackgroundComponnet(
-        size: size,
-        image: bgImage);
+    final bgComponent = FBBackgroundComponnet(size: size, image: bgImage);
     add(bgComponent);
 
     // caculate the fit unit size
@@ -95,7 +93,7 @@ class FallBlocksGame extends FlameGame
 
   nextTurn() async {
     newLine();
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 200));
     for (final block in _blocks.reversed) {
       block.markNeedFall();
     }
@@ -110,7 +108,7 @@ class FallBlocksGame extends FlameGame
         continue;
       }
       int row = (block.position.y + unitSize.height * 0.5) ~/ unitSize.height;
-      
+
       if (!blockStats.containsKey(row)) {
         blockStats[row] = [];
         blockWidthStats[row] = 0;
@@ -149,7 +147,8 @@ class FallBlocksGame extends FlameGame
     }
 
     // create new line
-    final unitCountOptions = [1, 2, 3, 4];
+    // final unitCountOptions = [1, 2, 3, 4];
+    final unitCountOptions = [4, 4, 4, 4];
     List<int> blocksUnitCount = [];
     var leftUnitCount = mapSize.width.toInt();
     while (true) {
@@ -162,7 +161,7 @@ class FallBlocksGame extends FlameGame
       }
     }
 
-    var gapIndex = Random().nextInt(blocksUnitCount.length);
+    var gapIndex = 0; //Random().nextInt(blocksUnitCount.length);
     // create blocks
     var pos = 0;
     var lineOrigin = gameBottomLineOrigin;
